@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>A Message for You ❤️</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        /* Floating hearts animation */
+        .heart {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.1);
+            font-size: 20px;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+        
+        .heart:nth-child(1) { top: 10%; left: 10%; animation-delay: 0s; }
+        .heart:nth-child(2) { top: 20%; right: 10%; animation-delay: 2s; }
+        .heart:nth-child(3) { bottom: 10%; left: 20%; animation-delay: 4s; }
+        .heart:nth-child(4) { bottom: 20%; right: 20%; animation-delay: 1s; }
+        .heart:nth-child(5) { top: 50%; left: 5%; animation-delay: 3s; }
+        .heart:nth-child(6) { top: 70%; right: 5%; animation-delay: 5s; }
+        
+        .container {
+            position: relative;
+            z-index: 10;
+        }
+        
+        .envelope {
+            position: relative;
+            width: 400px;
+            height: 280px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.3));
+        }
+        
+        .envelope:hover {
+            transform: translateY(-5px);
+        }
+        
+        .envelope-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 10px;
+            z-index: 1;
+        }
+        
+        .envelope-front {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            border-radius: 10px;
+            z-index: 3;
+            transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            transform-origin: bottom;
+        }
+        
+        .envelope.opened .envelope-front {
+            transform: rotateX(-180deg);
+        }
+        
+        .envelope-flap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60%;
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            clip-path: polygon(0 0, 100% 0, 50% 100%);
+            z-index: 4;
+            transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            transform-origin: top;
+        }
+        
+        .envelope.opened .envelope-flap {
+            transform: rotateX(180deg);
+        }
+        
+        .letter {
+            position: absolute;
+            width: 90%;
+            height: 70%;
+            background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+            border-radius: 8px;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            opacity: 0;
+            transition: all 1s ease;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .envelope.opened .letter {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+        
+        .letter-content {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 1.2s ease 0.5s;
+        }
+        
+        .envelope.opened .letter-content {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .letter h2 {
+            color: #667eea;
+            font-size: 28px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        
+        .letter p {
+            color: #333;
+            font-size: 20px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+        
+        .signature {
+            color: #764ba2;
+            font-style: italic;
+            font-size: 22px;
+            font-weight: bold;
+        }
+        
+        /* Massive photo styles */
+        .massive-photo {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.8s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .massive-photo.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .massive-photo img {
+            max-width: 90vw;
+            max-height: 90vh;
+            object-fit: contain;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 5px solid #f093fb;
+        }
+        
+        .massive-photo::before {
+            content: 'Tap to close';
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            font-size: 18px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 15px;
+            border-radius: 25px;
+            z-index: 1001;
+        }
+        
+        .instruction {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 18px;
+            opacity: 0.8;
+            animation: pulse 2s infinite;
+            z-index: 5;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 0.4; }
+        }
+        
+        .envelope.opened ~ .instruction {
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        /* Sparkle effect */
+        .sparkle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            animation: sparkle 2s infinite;
+        }
+        
+        @keyframes sparkle {
+            0%, 100% { opacity: 0; transform: scale(0); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+        
+        .sparkle:nth-child(1) { top: 20%; left: 80%; animation-delay: 0s; }
+        .sparkle:nth-child(2) { top: 80%; left: 20%; animation-delay: 0.5s; }
+        .sparkle:nth-child(3) { top: 60%; right: 15%; animation-delay: 1s; }
+        .sparkle:nth-child(4) { bottom: 60%; left: 15%; animation-delay: 1.5s; }
+        
+        @media (max-width: 768px) {
+            .envelope {
+                width: 280px;
+                height: 196px;
+            }
+            
+            .letter h2 {
+                font-size: 22px;
+                margin-bottom: 15px;
+            }
+            
+            .letter p {
+                font-size: 16px;
+                margin-bottom: 20px;
+            }
+            
+            .signature {
+                font-size: 18px;
+            }
+            
+            .instruction {
+                font-size: 16px;
+                bottom: 30px;
+            }
+            
+            .massive-photo img {
+                max-width: 98vw;
+                max-height: 98vh;
+            }
+            
+            .massive-photo::before {
+                font-size: 14px;
+                padding: 6px 10px;
+                top: 10px;
+                right: 10px;
+            }
+            
+            .heart {
+                font-size: 16px;
+            }
+            
+            .sparkle {
+                width: 3px;
+                height: 3px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .envelope {
+                width: 250px;
+                height: 175px;
+            }
+            
+            .letter h2 {
+                font-size: 20px;
+                margin-bottom: 12px;
+            }
+            
+            .letter p {
+                font-size: 14px;
+                margin-bottom: 15px;
+            }
+            
+            .signature {
+                font-size: 16px;
+            }
+            
+            .instruction {
+                font-size: 14px;
+                bottom: 20px;
+            }
+            
+            .massive-photo::before {
+                font-size: 12px;
+                padding: 5px 8px;
+            }
+        }
+        
+        /* Touch-friendly interactions */
+        @media (hover: none) and (pointer: coarse) {
+            .envelope {
+                min-height: 44px;
+                min-width: 44px;
+            }
+            
+            .massive-photo {
+                -webkit-tap-highlight-color: transparent;
+            }
+            
+            .massive-photo:active {
+                background: rgba(0, 0, 0, 0.95);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating hearts -->
+    <div class="heart">❤️</div>
+    <div class="heart">💕</div>
+    <div class="heart">💖</div>
+    <div class="heart">💗</div>
+    <div class="heart">💝</div>
+    <div class="heart">💞</div>
+    
+    <!-- Sparkles -->
+    <div class="sparkle"></div>
+    <div class="sparkle"></div>
+    <div class="sparkle"></div>
+    <div class="sparkle"></div>
+    
+    <div class="container">
+        <div class="envelope" id="envelope">
+            <div class="envelope-back"></div>
+            <div class="envelope-front"></div>
+            <div class="envelope-flap"></div>
+            <div class="letter">
+                <div class="letter-content">
+                    <h2>Dear Georgeous,</h2>
+                    <p>Sorry for not replying to you much today!</p>
+                    <div class="signature">Lots of love,<br>Georgeous</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Massive photo overlay -->
+    <div class="massive-photo" id="massivePhoto">
+        <img src="IMG_1504.JPG" alt="Your Photo">
+    </div>
+    
+    <div class="instruction">Click or tap the envelope to open 💌</div>
+    
+    <script>
+        const envelope = document.getElementById('envelope');
+        const instruction = document.querySelector('.instruction');
+        const massivePhoto = document.getElementById('massivePhoto');
+        let isOpened = false;
+        let photoTimer = null;
+        
+        // Handle both touch and click events for mobile compatibility
+        function handleEnvelopeOpen() {
+            if (!isOpened) {
+                envelope.classList.add('opened');
+                instruction.style.opacity = '0';
+                isOpened = true;
+                
+                // Add some magical sparkle effects
+                setTimeout(() => {
+                    createSparkleEffect();
+                }, 800);
+                
+                // Show massive photo after 5 seconds
+                setTimeout(() => {
+                    showMassivePhoto();
+                }, 5000);
+            }
+        }
+        
+        function handlePhotoClose() {
+            hideMassivePhoto();
+        }
+        
+        // Add event listeners for both touch and click
+        envelope.addEventListener('click', handleEnvelopeOpen);
+        envelope.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            handleEnvelopeOpen();
+        });
+        
+        function showMassivePhoto() {
+            massivePhoto.classList.add('show');
+        }
+        
+        function hideMassivePhoto() {
+            massivePhoto.classList.remove('show');
+            
+            // Reappear after 5 seconds
+            photoTimer = setTimeout(() => {
+                showMassivePhoto();
+            }, 5000);
+        }
+        
+        // Tap to close the massive photo
+        massivePhoto.addEventListener('click', handlePhotoClose);
+        massivePhoto.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            handlePhotoClose();
+        });
+        
+        function createSparkleEffect() {
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => {
+                    const sparkle = document.createElement('div');
+                    sparkle.className = 'sparkle';
+                    sparkle.style.left = Math.random() * 100 + '%';
+                    sparkle.style.top = Math.random() * 100 + '%';
+                    sparkle.style.animationDelay = Math.random() * 2 + 's';
+                    document.body.appendChild(sparkle);
+                    
+                    setTimeout(() => {
+                        sparkle.remove();
+                    }, 2000);
+                }, i * 100);
+            }
+        }
+        
+        // Add some interactive hover effects
+        envelope.addEventListener('mouseenter', function() {
+            if (!isOpened) {
+                envelope.style.transform = 'translateY(-5px) scale(1.02)';
+            }
+        });
+        
+        envelope.addEventListener('mouseleave', function() {
+            if (!isOpened) {
+                envelope.style.transform = 'translateY(0) scale(1)';
+            }
+        });
+    </script>
+</body>
+</html>
